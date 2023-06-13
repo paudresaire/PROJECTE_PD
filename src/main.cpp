@@ -8,9 +8,19 @@ bool hayGanador();
 void mostrarTablero();
 int mirar_led(int fila, int columna);
 void Tablero_terminal(char jugador);
+bool tableroCompleto();
+void animacionVictoria();
+void reiniciarPartida();
+
+static int totalpartides = 0;
 
 
 CRGB leds[NUM_LEDS];
+const CRGB COLOR_VERDE = CRGB::Green;
+const CRGB COLOR_AZUL = CRGB::Blue;
+const CRGB COLOR_ROJO = CRGB::Red;
+const CRGB COLOR_NARANJA = CRGB::Orange;
+const CRGB COLOR_VIOLETA = CRGB::Violet;
 
 // Matriz para el tablero
 char tablero[3][3] = {
@@ -21,12 +31,13 @@ char tablero[3][3] = {
 
 // Variables para el estado del juego
 bool juegoTerminado = false;
+bool empate = false;
 char jugadorActual = 'X';
 
 void setup() {
 	// Inicialización de los LED Neopixel
 	FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
-	FastLED.setBrightness(100);  // Ajusta el brillo de los LED Neopixel
+	FastLED.setBrightness(200);  // Ajusta el brillo de los LED Neopixel
 	
 	
 	// Mostrar el tablero vacío al inicio
@@ -36,11 +47,13 @@ void setup() {
 
 
 void loop() {
-	// Verificar si el juego ha terminado
-	if (juegoTerminado) {
-		return;  // Salir del bucle si el juego ha terminado
-	}
 	
+	// Verificar si el juego ha terminado y se presionó el botón de escape
+		if (juegoTerminado && Serial.available() && Serial.read() == 27) {
+			reiniciarPartida();
+			return;
+		}
+
 	// Esperar a que el jugador ingrese una jugada
 	if (Serial.available()) {
 		char jugada = Serial.read();
@@ -96,17 +109,28 @@ void loop() {
 		else if (jugadorActual == 'O')
 			Tablero_terminal('X');
 
+			Serial.println();
+			Serial.print("Total de partides jugades = ");
+			Serial.println(totalpartides);
+			Serial.println();
+
 		// Verificar si hay un ganador
 		if (hayGanador()) {
 			Serial.print("¡Jugador ");
 			Serial.print(jugadorActual);
 			Serial.println(" ha ganado!");
+
+			animacionVictoria();
+			juegoTerminado = true;
+		}
+
+		empate = tableroCompleto();
+		jugadorActual = (jugadorActual == 'X') ? 'O' : 'X';
+		if (empate){
+			Serial.println("EMPATE!!");
 			juegoTerminado = true;
 			return;
 		}
-
-		jugadorActual = (jugadorActual == 'X') ? 'O' : 'X';
-		
 	}
 }
 
@@ -205,3 +229,73 @@ void Tablero_terminal(char jugador)
     Serial.println(jugador);
 		Serial.println();
 }
+
+bool tableroCompleto() {
+  for (int fila = 0; fila < 3; fila++) {
+    for (int columna = 0; columna < 3; columna++) {
+      if (tablero[fila][columna] == ' ') {
+        return false;  // Hay al menos una casilla vacía, no está completo
+      }
+    }
+  }
+  return true;
+}
+
+void animacionVictoria() {
+  for (int i = 0; i < 8; i++) {  // Repetir la animación 5 veces
+    // Encender todas las luces en verde
+    fill_solid(leds, NUM_LEDS, COLOR_VERDE);
+    FastLED.show();
+    delay(100); 
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+    delay(100);  // Mantener el estado apagado durante 500 ms
+
+		fill_solid(leds, NUM_LEDS, COLOR_NARANJA);
+    FastLED.show();
+    delay(100); 
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+    delay(100);  // Mantener el estado apagado durante 500 ms
+
+		fill_solid(leds, NUM_LEDS, COLOR_VIOLETA);
+    FastLED.show();
+    delay(100); 
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+    delay(100);  // Mantener el estado apagado durante 500 ms
+
+		fill_solid(leds, NUM_LEDS, COLOR_ROJO);
+    FastLED.show();
+    delay(100); 
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+    delay(100);  // Mantener el estado apagado durante 500 ms
+
+		fill_solid(leds, NUM_LEDS, COLOR_AZUL);
+    FastLED.show();
+    delay(100); 
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+    delay(100);  // Mantener el estado apagado durante 500 ms
+  }
+}
+
+void reiniciarPartida() {
+  // Reiniciar variables de estado del juego
+  juegoTerminado = false;
+  empate = false;
+  jugadorActual = 'X';
+	totalpartides++;
+
+  // Limpiar el tablero
+  for (int fila = 0; fila < 3; fila++) {
+    for (int columna = 0; columna < 3; columna++) {
+      tablero[fila][columna] = ' ';
+    }
+  }
+
+  // Mostrar el tablero vacío
+  mostrarTablero();
+}
+
