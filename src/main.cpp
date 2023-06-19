@@ -28,9 +28,7 @@ char obtenerGanador();
 bool esMovimientoValido(int fila, int columna);
 void realizarMovimiento(int fila, int columna);
 
-
 static int totalpartides = 0;
-
 
 CRGB leds[NUM_LEDS];
 const CRGB COLOR_VERDE = CRGB::Green;
@@ -177,9 +175,6 @@ void realizarJugada(char jugada) {
     return;
   }
 }
-
-
-
 
 //Funcio per a mostrar el tauler
 void mostrarTablero() 
@@ -345,51 +340,6 @@ void reiniciarPartida() {
   mostrarTablero();
 }
 
-
-/*String HTML = "<!DOCTYPE html>\
-<html>\
-<head>\
-<style>\
-table {\
-  border-collapse: collapse;\
-}\
-td {\
-  width: 50px;\
-  height: 50px;\
-  text-align: center;\
-  border: 1px solid black;\
-}\
-</style>\
-</head>\
-<body>\
-<h1>Tres en raya</h1>\
-<table>\
-<tr>\
-<td onclick=\"playMove(0, 0)\">" + String(tablero[0][0]) + "</td>\
-<td onclick=\"playMove(0, 1)\">" + String(tablero[0][1]) + "</td>\
-<td onclick=\"playMove(0, 2)\">" + String(tablero[0][2]) + "</td>\
-</tr>\
-<tr>\
-<td onclick=\"playMove(1, 0)\">" + String(tablero[1][0]) + "</td>\
-<td onclick=\"playMove(1, 1)\">" + String(tablero[1][1]) + "</td>\
-<td onclick=\"playMove(1, 2)\">" + String(tablero[1][2]) + "</td>\
-</tr>\
-<tr>\
-<td onclick=\"playMove(2, 0)\">" + String(tablero[2][0]) + "</td>\
-<td onclick=\"playMove(2, 1)\">" + String(tablero[2][1]) + "</td>\
-<td onclick=\"playMove(2, 2)\">" + String(tablero[2][2]) + "</td>\
-</tr>\
-</table>\
-<script>\
-function playMove(row, col) {\
-  var xhttp = new XMLHttpRequest();\
-  xhttp.open('GET', '/move?row=' + row + '&col=' + col, true);\
-  xhttp.send();\
-}\
-</script>\
-</body>\
-</html>";*/
-
 String HTML = "<!DOCTYPE html>\
 <html>\
 <head>\
@@ -398,115 +348,46 @@ table {\
   border-collapse: collapse;\
 }\
 td {\
-  width: 50px;\
   height: 50px;\
   text-align: center;\
   border: 1px solid black;\
 }\
+td:first-child {\
+  width: 100px; /* Ancho fijo para la columna de la izquierda */\
+}\
+td:not(:first-child) {\
+  width: 100px; /* Ancho ajustado para las columnas restantes */\
+}\
 </style>\
 </head>\
 <body>\
-<h1>Tres en raya</h1>\
-<table>\
-<tr>\
-<td onclick=\"playMove(0, 0)\">" + String(tablero[0][0]) + "</td>\
-<td onclick=\"playMove(0, 1)\">" + String(tablero[0][1]) + "</td>\
-<td onclick=\"playMove(0, 2)\">" + String(tablero[0][2]) + "</td>\
-</tr>\
-<tr>\
-<td onclick=\"playMove(1, 0)\">" + String(tablero[1][0]) + "</td>\
-<td onclick=\"playMove(1, 1)\">" + String(tablero[1][1]) + "</td>\
-<td onclick=\"playMove(1, 2)\">" + String(tablero[1][2]) + "</td>\
-</tr>\
-<tr>\
-<td onclick=\"playMove(2, 0)\">" + String(tablero[2][0]) + "</td>\
-<td onclick=\"playMove(2, 1)\">" + String(tablero[2][1]) + "</td>\
-<td onclick=\"playMove(2, 2)\">" + String(tablero[2][2]) + "</td>\
-</tr>\
-</table>\
+{tabla}\
 <script>\
 function playMove(row, col) {\
   var xhttp = new XMLHttpRequest();\
-  xhttp.open('GET', '/move?row=' + row + '&col=' + col, true);\
+  xhttp.onreadystatechange = function() {\
+    if (this.readyState == 4 && this.status == 200) {\
+      document.getElementById('tabla').innerHTML = this.responseText;\
+    }\
+  };\
+  xhttp.open('GET', '/move?fila=' + row + '&columna=' + col, true);\
   xhttp.send();\
 }\
 </script>\
 </body>\
 </html>";
 
-/*
 String generarTablaHTML() {
-  String tablaHTML = "<table>";
+  String tablaHTML = "<table id='tabla'>";
   for (int fila = 0; fila < 3; fila++) {
     tablaHTML += "<tr>";
     for (int columna = 0; columna < 3; columna++) {
-      tablaHTML += "<td>";
-      tablaHTML += tablero[fila][columna];
-      tablaHTML += "</td>";
-    }
-    tablaHTML += "</tr>";
-  }
-  tablaHTML += "</table>";
-  return tablaHTML;
-}
-
-
-void handle_move() {
-  // Leer el número de fila y columna enviados por la solicitud HTTP
-  int fila = server.arg("fila").toInt();
-  int columna = server.arg("columna").toInt();
-
-  // Verificar si el movimiento es válido y actualizar el tablero si es así
-  if (esMovimientoValido(fila, columna)) {
-    realizarMovimiento(fila, columna);
-
-    // Construir la página HTML con el tablero actualizado
-    String html = HTML;  // Utilizar la cadena HTML proporcionada
-    // Reemplazar los valores del tablero en la cadena HTML
-    html.replace("{0}", String(tablero[0][0]));
-    html.replace("{1}", String(tablero[0][1]));
-    html.replace("{2}", String(tablero[0][2]));
-    html.replace("{3}", String(tablero[1][0]));
-    html.replace("{4}", String(tablero[1][1]));
-    html.replace("{5}", String(tablero[1][2]));
-    html.replace("{6}", String(tablero[2][0]));
-    html.replace("{7}", String(tablero[2][1]));
-    html.replace("{8}", String(tablero[2][2]));
-
-    // Enviar la página HTML como respuesta HTTP
-    server.send(200, "text/html", html);
-  } else {
-    // Enviar una respuesta HTTP de error
-    server.send(400, "text/plain", "Movimiento invalido");
-  }
-}
-
-void handle_root() {
-  // Construir la página HTML con el tablero inicial
-  String html = HTML;  // Utilizar la cadena HTML proporcionada
-  // Reemplazar los valores del tablero en la cadena HTML
-  html.replace("{0}", String(tablero[0][0]));
-  html.replace("{1}", String(tablero[0][1]));
-  html.replace("{2}", String(tablero[0][2]));
-  html.replace("{3}", String(tablero[1][0]));
-  html.replace("{4}", String(tablero[1][1]));
-  html.replace("{5}", String(tablero[1][2]));
-  html.replace("{6}", String(tablero[2][0]));
-  html.replace("{7}", String(tablero[2][1]));
-  html.replace("{8}", String(tablero[2][2]));
-
-  // Enviar la página HTML como respuesta HTTP
-  server.send(200, "text/html", html);
-}
-
-*/
-
-String generarTablaHTML() {
-  String tablaHTML = "<table>";
-  for (int fila = 0; fila < 3; fila++) {
-    tablaHTML += "<tr>";
-    for (int columna = 0; columna < 3; columna++) {
-      tablaHTML += "<td onclick=\"playMove(" + String(fila) + ", " + String(columna) + ")\">";
+      if (columna == 0) {
+        tablaHTML += "<td onclick=\"playMove(" + String(fila) + ", " + String(columna) + ")\">";
+      } else {
+        tablaHTML += "<td onclick=\"playMove(" + String(fila) + ", " + String(columna) + ")\">";
+      }
+			tablaHTML += "TRES EN RAYA";
       tablaHTML += String(tablero[fila][columna]);
       tablaHTML += "</td>";
     }
@@ -531,12 +412,17 @@ void handle_move() {
     if (ganador != ' ') {
       String mensaje = "GANADOR: Jugador " + String(ganador);
       server.send(200, "text/plain", mensaje);
-    } else {
+			animacionVictoria();
+    } 
+		 else if (tableroCompleto()) {  // Verificar si hay empate
+      server.send(200, "text/plain", "EMPATE");
+		}
+		else {
       // Construir la página HTML con el tablero actualizado
       String tablaHTML = generarTablaHTML();
       String html = HTML;  // Utilizar la cadena HTML proporcionada
-      // Reemplazar la etiqueta <table> en la cadena HTML
-      html.replace("<table>", tablaHTML);
+      // Reemplazar la etiqueta {tabla} en la cadena HTML
+      html.replace("{tabla}", tablaHTML);
 
       // Enviar la página HTML como respuesta HTTP
       server.send(200, "text/html", html);
@@ -551,8 +437,8 @@ void handle_root() {
   // Construir la página HTML con el tablero inicial
   String tablaHTML = generarTablaHTML();
   String html = HTML;  // Utilizar la cadena HTML proporcionada
-  // Reemplazar la etiqueta <table> en la cadena HTML
-  html.replace("<table>", tablaHTML);
+  // Reemplazar la etiqueta {tabla} en la cadena HTML
+  html.replace("{tabla}", tablaHTML);
 
   // Enviar la página HTML como respuesta HTTP
   server.send(200, "text/html", html);
@@ -584,7 +470,6 @@ char obtenerGanador() {
   return ' ';  // No hay ganador
 }
 
-
 bool esMovimientoValido(int fila, int columna) {
   // Verificar si la posición está dentro de los límites del tablero
   if (fila >= 0 && fila < 3 && columna >= 0 && columna < 3) {
@@ -605,7 +490,6 @@ void realizarMovimiento(int fila, int columna) {
 
   // Cambiar al siguiente jugador
   jugadorActual = (jugadorActual == 'X') ? 'O' : 'X';
+	mostrarTablero();
 }
-
-
 
