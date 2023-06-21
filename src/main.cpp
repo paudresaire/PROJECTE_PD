@@ -341,53 +341,6 @@ void reiniciarPartida() {
   mostrarTablero();
 }
 
-/*
-String HTML = "<!DOCTYPE html>\
-<html>\
-<head>\
-<style>\
-body {\
-  display: flex;\
-  flex-direction: column;\
-  justify-content: center;\
-  align-items: center;\
-  height: 100vh;\
-}\
-table {\
-  border-collapse: collapse;\
-}\
-td {\
-  height: 50px;\
-  text-align: center;\
-  border: 1px solid black;\
-}\
-td:first-child {\
-  width: 100px; \
-}\
-td:not(:first-child) {\
-  width: 100px;\
-}\
-</style>\
-</head>\
-<body>\
-<h1>TRES EN RAYA</h1>\
-{tabla}\
-<script>\
-function playMove(row, col) {\
-  var xhttp = new XMLHttpRequest();\
-  xhttp.onreadystatechange = function() {\
-    if (this.readyState == 4 && this.status == 200) {\
-      document.getElementById('tabla').innerHTML = this.responseText;\
-    }\
-  };\
-  xhttp.open('GET', '/move?fila=' + row + '&columna=' + col, true);\
-  xhttp.send();\
-}\
-</script>\
-</body>\
-</html>";
-*/
-
 
 String generarTablaHTML() {
   String tablaHTML = "<table id='tabla'>";
@@ -404,53 +357,7 @@ String generarTablaHTML() {
   return tablaHTML;
 }
 
-/*
-void handle_move() {
-  // Leer el número de fila y columna enviados por la solicitud HTTP
-  int fila = server.arg("fila").toInt();
-  int columna = server.arg("columna").toInt();
-
-  // Verificar si el movimiento es válido y actualizar el tablero si es así
-  if (esMovimientoValido(fila, columna)) {
-    realizarMovimiento(fila, columna);
-
-    // Verificar si hay un ganador
-    char ganador = obtenerGanador();
-    if (ganador != ' ') {
-			String mensaje = "GANADOR: Jugador " + String(ganador);
-			server.send(200, "text/plain", mensaje);
-			animacionVictoria();
-		} else if (tableroCompleto()) {
-			server.send(200, "text/plain", "EMPATE");
-		} else {
-			// Construir la página HTML con el tablero actualizado
-			String tablaHTML = generarTablaHTML();
-			String html = HTML;  // Utilizar la cadena HTML proporcionada
-			// Reemplazar la etiqueta {tabla} en la cadena HTML
-			html.replace("{tabla}", tablaHTML);
-
-			// Enviar la página HTML como respuesta HTTP
-			server.send(200, "text/html", html);
-		}
-  } else {
-    // Enviar una respuesta HTTP de error
-    server.send(400, "text/plain", "Movimiento inválido");
-  }
-}
-
-void handle_root() {
-  // Construir la página HTML con el tablero inicial
-  String tablaHTML = generarTablaHTML();
-  String html = HTML;  // Utilizar la cadena HTML proporcionada
-
-  html.replace("{tabla}", tablaHTML.c_str());
-
-  // Enviar la página HTML como respuesta HTTP
-  server.send(200, "text/html", html);
-}
-*/
-
-String HTML = "<!DOCTYPE html>\
+//String HTML = "<!DOCTYPE html>\
 <html>\
 <head>\
 <style>\
@@ -494,6 +401,60 @@ function playMove(row, col) {\
 </script>\
 </body>\
 </html>";
+
+
+String HTML = R"html(
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+table {
+  border-collapse: collapse;
+}
+td {
+  height: 50px;
+  text-align: center;
+  border: 1px solid black;
+}
+td:first-child {
+  width: 100px;
+}
+td:not(:first-child) {
+  width: 100px;
+}
+</style>
+</head>
+<body>
+<h1>TRES EN RAYA</h1>
+<div id='tabla'>{tabla}</div>
+<script>
+function reproducirSonido(idSonido) {
+  var audio = document.getElementById(idSonido);
+  audio.play();
+}
+function playMove(row, col) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById('tabla').innerHTML = this.responseText;
+      reproducirSonido('sonido1'); // Reproducir sonido al hacer un movimiento
+    }
+  };
+  xhttp.open('GET', '/move?fila=' + row + '&columna=' + col, true);
+  xhttp.send();
+}
+</script>
+<audio id='sonido1' src='file:///C:/Users/Lenovo/Documents/PlatformIO/Projects/Projecte_final/sonido.mp3'></audio>
+</body>
+</html>
+)html";
 
 
 void handle_move() {
@@ -591,4 +552,3 @@ void realizarMovimiento(int fila, int columna) {
   jugadorActual = (jugadorActual == 'X') ? 'O' : 'X';
 	mostrarTablero();
 }
-

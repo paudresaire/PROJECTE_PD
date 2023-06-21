@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reproducir sonido localmente</title>
+</head>
+<body>
+    <h1>Reproducir sonido localmente</h1>
+    <button onclick="playSound()">Reproducir sonido</button>
+
+    <script>
+        function playSound() {
+            var audio = new Audio('file:///C:/Users/Lenovo/Documents/PlatformIO/Projects/Projecte_final/sonido.mp3');
+            audio.play();
+        }
+    </script>
+</body>
+</html>
